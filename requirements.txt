@@ -3,3 +3,5 @@ bs4
 webdriver-manager 
 openpyxl 
 pandas
+PyQt5
+qasync

@@ -12,9 +12,6 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment
 from urllib.parse import urljoin
 
-# Metadata
-current_date_time = "2025-06-06 08:04:00"
-current_user_login = "sxd993"
 
 def setup_driver():
     """Настройка Selenium-драйвера."""
@@ -38,7 +35,7 @@ def get_page_content(driver, url):
     except:
         return None
 
-def parse_products(soup, max_products, current_product_count):
+def parse_products(soup, max_products, current_product_count, progress_handler=None):
     """Извлечение данных о товарах из HTML с учетом лимита."""
     products_data = []
     products = soup.find_all('div', attrs={'data-qa': 'products-tile'})
@@ -91,6 +88,8 @@ def parse_products(soup, max_products, current_product_count):
             })
 
             current_product_count += 1
+            if progress_handler:
+                progress_handler.update(1)
 
         except:
             continue
@@ -141,13 +140,16 @@ def save_to_excel(products_data, filename='products.xlsx'):
     except Exception as e:
         raise
 
-def main(url, max_products=0):
+def main(url, max_products=0, progress_handler=None):
     """Основная функция парсинга."""
     driver = setup_driver()
     products_data = []
     current_product_count = 0
     base_url = url.split('#')[0]
     current_page = 1
+
+    if progress_handler and max_products > 0:
+        progress_handler.set_total(max_products)
 
     try:
         current_url = base_url
@@ -156,7 +158,7 @@ def main(url, max_products=0):
             if not soup:
                 break
 
-            page_products, current_product_count = parse_products(soup, max_products, current_product_count)
+            page_products, current_product_count = parse_products(soup, max_products, current_product_count, progress_handler)
             products_data.extend(page_products)
 
             if max_products > 0 and current_product_count >= max_products:
@@ -173,6 +175,6 @@ def main(url, max_products=0):
         print('Эксель создан')
 
 if __name__ == "__main__":
-    url = input("Введите URL для парсинга: ")
+    url = input("Введите URL для парсинга (Пример: https://www.vseinstrumenti.ru/category/perforatory-32/): ")
     max_products = int(input("Введите максимальное количество товаров (0 для всех): "))
     main(url, max_products)
