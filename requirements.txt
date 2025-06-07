@@ -1,7 +1,7 @@
-selenium 
-bs4 
-webdriver-manager 
-openpyxl 
+beautifulsoup4
+openpyxl
 pandas
 PyQt5
 qasync
+selenium
+webdriver-manager
